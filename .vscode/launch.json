@@ -4,12 +4,12 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
         {
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/${fileBasenameNoExtension}.exe",
+            "program": "/home/ziyueyang/ubuntu_code/ubuntu_cv/bin/${fileBasenameNoExtension}.exe",
+            // "program": "${workspaceRoot}/${fileBasenameNoExtension}.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",

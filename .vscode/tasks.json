@@ -9,10 +9,11 @@
                 "-g",
                 "-std=c++11",
                 // single
-                "${file}",
-                // "${fileDirname}\\*.cpp",
+                // "${file}",
+                "${fileDirname}/*.cpp",
                 "-o",
-                "${fileBasenameNoExtension}.exe",
+                // "${fileBasenameNoExtension}.exe",
+                "/home/ziyueyang/ubuntu_code/ubuntu_cv/bin/${fileBasenameNoExtension}.exe",
                 "-I",
                 "/usr/local/include",
                 "-I",
@@ -71,6 +72,7 @@
                 "${file}",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
+                // "/home/ziyueyang/ubuntu_code/ubuntu_cv/bin/${fileBasenameNoExtension}.exe"
             ],
             "options": {
                 "cwd": "${fileDirname}"
