@@ -47,46 +47,46 @@
 //     return 0;
 // }
 
-// @ day_4
-#include <iostream>
-#include <opencv2/opencv.hpp>
-using namespace std;
-using namespace cv;
+// // @ day_4
+// #include <iostream>
+// #include <opencv2/opencv.hpp>
+// using namespace std;
+// using namespace cv;
 
-int main(void)
-{
-    Mat image = imread("/home/ziyueyang/Pictures/photograph/paperwall_2.jpg");
-    Mat m0 = image.clone();
-    int rows = image.rows;
-    int cols = image.cols;
-    int channels = image.channels();
-    // 反色
-    for (int row = 0; row < rows; row++)
-    {
-        for (int col = 0; col < cols; col++)
-        {
-            if (channels == 1)
-            {
-                // 灰度空间
-                int pv = image.at<uchar>(row, col);
-                image.at<uchar>(row, col) = 255 - pv;
-            }
-            if (channels == 3)
-            {
-                // 彩色空间
-                Vec3b bgr = image.at<Vec3b>(row, col);
-                image.at<Vec3b>(row, col)[0] = 255 - bgr[0];
-                image.at<Vec3b>(row, col)[1] = 255 - bgr[1];
-                image.at<Vec3b>(row, col)[2] = 255 - bgr[2];
-            }
-        }
-    }
-    namedWindow("image", WINDOW_FREERATIO);
-    imshow("image", image);
-    namedWindow("m0", WINDOW_FREERATIO);
-    imshow("m0", m0);
-    waitKey(0);
-    destroyAllWindows();
+// int main(void)
+// {
+//     Mat image = imread("/home/ziyueyang/Pictures/photograph/paperwall_2.jpg");
+//     Mat m0 = image.clone();
+//     int rows = image.rows;
+//     int cols = image.cols;
+//     int channels = image.channels();
+//     // 反色
+//     for (int row = 0; row < rows; row++)
+//     {
+//         for (int col = 0; col < cols; col++)
+//         {
+//             if (channels == 1)
+//             {
+//                 // 灰度空间
+//                 int pv = image.at<uchar>(row, col);
+//                 image.at<uchar>(row, col) = 255 - pv;
+//             }
+//             if (channels == 3)
+//             {
+//                 // 彩色空间
+//                 Vec3b bgr = image.at<Vec3b>(row, col);
+//                 image.at<Vec3b>(row, col)[0] = 255 - bgr[0];
+//                 image.at<Vec3b>(row, col)[1] = 255 - bgr[1];
+//                 image.at<Vec3b>(row, col)[2] = 255 - bgr[2];
+//             }
+//         }
+//     }
+//     namedWindow("image", WINDOW_FREERATIO);
+//     imshow("image", image);
+//     namedWindow("m0", WINDOW_FREERATIO);
+//     imshow("m0", m0);
+//     waitKey(0);
+//     destroyAllWindows();
 
-    return 0;
-}
+//     return 0;
+// } 
