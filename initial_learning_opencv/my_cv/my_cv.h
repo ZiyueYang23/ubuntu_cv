@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
-
+#include <vector>
 class MyCV
 {
 public:
@@ -12,12 +12,11 @@ public:
     cv::Mat image_0_hsv;
 
 public:
-    // 构造函数默认读取一张图片到image_0
+    // defult read image_0 in class.
     MyCV();
 
     // change image_0 color space to gray and hsv,and write in photo_gallery
     void ChangeAndWriteImage0ColorSpaceToGrayHSV();
-
     // show image_0 
     void ShowImage0();
     // show image_0,image_0_gray and image_0_hsv
@@ -42,15 +41,25 @@ public:
     // subtract 3 channels color b g r
     cv::Mat Subtract3PointColor(cv::Mat &image, int b = 50, int g = 50, int r = 50);
     // mutliply 3 channels color b g r
-    cv::Mat Mutliply3PointColor(cv::Mat &image, int b = 5, int g = 5, int r = 5);
+    cv::Mat Mutliply3PointColor(cv::Mat &image, int b = 2, int g = 2, int r = 2);
     // divide 3 channels color b g r
-    cv::Mat Divide3PointColor(cv::Mat &image, int b = 5, int g = 5, int r = 5);
+    cv::Mat Divide3PointColor(cv::Mat &image, int b = 2, int g = 2, int r = 2);
 
     // change brightness and contrast by trackbar
     void ChangeBrightnessConstrastByTrackbar(cv::Mat &image);
 
-    // change to gray or HSV or brightness add 50 by waitKey()
-    cv::Mat ChangeToGrayHSVAndSoOnByWaitKey(cv::Mat &image);
+    // with menu you can choose different function ,all by myself ,you can try keyboard enter 1,2,3,4,5,0,+,-,*,/ ,that is fun,have a good time hh..
+    cv::Mat DispalayAllFunction(cv::Mat &image);
+
+    // show different color style by applyColorMap with COLORMAP_...
+    void ShowDiffColorStyle(cv::Mat &image);
+
+    // show Bitwise_and or not xor ,create rectangle and use bitWise_and or not...
+    void TextBitwise();
+    // text split merge mixChannels functions
+    void TextSplitMergeMixChannels(cv::Mat &image);
+
+    void TextInRang(cv::Mat &image);
 
 private:
     // default size is 1200 800 and flag is WINDOW_NORMAL

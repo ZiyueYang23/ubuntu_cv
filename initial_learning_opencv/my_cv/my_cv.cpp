@@ -104,11 +104,11 @@ cv::Mat MyCV::CreateGrayImage(int degree)
     return gray_image;
 }
 
-cv::Mat MyCV::CreateBGRimage(int blue, int green, int rad)
+cv::Mat MyCV::CreateBGRimage(int blue, int green, int red)
 {
     // 创建全1矩阵，8位无符号整数3通道
     cv::Mat bgr_image = cv::Mat::ones(cv::Size(1200, 800), CV_8UC3);
-    bgr_image = cv::Scalar(blue, green, rad);
+    bgr_image = cv::Scalar(blue, green, red);
     // 另外一种复制方式
     cv::Mat text_clone_image = bgr_image.clone();
     Show(text_clone_image);
@@ -176,7 +176,6 @@ cv::Mat MyCV::InverseColor(cv::Mat &image, int degree)
 
     return dst;
 }
-
 
 cv::Mat MyCV::Add3PointColor(cv::Mat &image, int b, int g, int r)
 {
@@ -256,7 +255,7 @@ void MyCV::ChangeBrightnessConstrastByTrackbar(cv::Mat &image)
     cv::destroyAllWindows();
 }
 
-cv::Mat MyCV::ChangeToGrayHSVAndSoOnByWaitKey(cv::Mat &image)
+cv::Mat MyCV::DispalayAllFunction(cv::Mat &image)
 {
     cv::Mat dst = cv::Mat::zeros(image.size(), image.type());
     bool is_running = true;
@@ -268,6 +267,10 @@ cv::Mat MyCV::ChangeToGrayHSVAndSoOnByWaitKey(cv::Mat &image)
         {
         case 27:
             is_running = false;
+            break;
+        case '0':
+            image.copyTo(dst);
+            std::cout << "come back to initial image!" << std::endl;
             break;
         case '1':
             cv::cvtColor(image, dst, cv::COLOR_BGR2GRAY);
@@ -299,6 +302,9 @@ cv::Mat MyCV::ChangeToGrayHSVAndSoOnByWaitKey(cv::Mat &image)
             break;
         case '4':
             ChangeBrightnessConstrastByTrackbar(image);
+            break;
+        case '5':
+            ShowDiffColorStyle(image);
         default:
             break;
         }
@@ -311,7 +317,112 @@ cv::Mat MyCV::ChangeToGrayHSVAndSoOnByWaitKey(cv::Mat &image)
     return dst;
 }
 
+void MyCV::ShowDiffColorStyle(cv::Mat &image)
+{
+    int color_style_map[] =
+        {
+            cv::COLORMAP_AUTUMN,
+            cv::COLORMAP_BONE,
+            cv::COLORMAP_CIVIDIS,
+            cv::COLORMAP_COOL,
+            cv::COLORMAP_DEEPGREEN,
+            cv::COLORMAP_HOT,
+            cv::COLORMAP_HSV,
+            cv::COLORMAP_INFERNO,
+            cv::COLORMAP_JET,
+            cv::COLORMAP_MAGMA,
+            cv::COLORMAP_OCEAN,
+            cv::COLORMAP_PARULA,
+            cv::COLORMAP_PINK,
+            cv::COLORMAP_PLASMA,
+            cv::COLORMAP_RAINBOW,
+            cv::COLORMAP_SPRING,
+            cv::COLORMAP_SUMMER,
+            cv::COLORMAP_TURBO,
+            cv::COLORMAP_TWILIGHT,
+            cv::COLORMAP_VIRIDIS,
+            cv::COLORMAP_WINTER,
+        };
 
+    cv::Mat dst = cv::Mat::zeros(image.size(), image.type());
+    int index(0);
+    bool is_running = true;
+    while (is_running)
+    {
+        int c = cv::waitKey(500);
+        if (c == 27)
+        {
+            is_running = false;
+            break;
+        }
+        cv::applyColorMap(image, dst, color_style_map[index % 21]);
+        index++;
+        NamedAndResizeWindow("image");
+        NamedAndResizeWindow("dst");
+        cv::imshow("image", image);
+        cv::imshow("dst", dst);
+    }
+}
+
+void MyCV::TextBitwise()
+{
+    cv::Mat m1 = cv::Mat::zeros(cv::Size(256, 256), CV_8UC3);
+    cv::Mat m2 = cv::Mat::zeros(cv::Size(256, 256), CV_8UC3);
+    // 创建矩形，Rect中前两个参数就是矩形左上角顶点的坐标，后两个就是长宽
+    // Scalar很熟了就是给颜色，第四个参数是边框厚度如果想填充就-1,正数就是表示边框的宽度，第五个参数一般LINE_8,第六个是小数点，笔记中有详解
+    cv::rectangle(m1, cv::Rect(100, 100, 80, 80), cv::Scalar(255, 0, 255), -1, cv::LINE_8, 0);
+    cv::rectangle(m2, cv::Rect(150, 150, 80, 80), cv::Scalar(0, 255, 255), -1, cv::LINE_8, 0);
+    cv::Mat dst=cv::Mat::zeros(cv::Size(256,256),CV_8UC3);
+    cv::bitwise_or(m1,m2,dst);
+    Show(m1, m2,dst, "m1", "m2","or->dst");
+    cv::bitwise_xor(m1, m2, dst);
+    Show(dst, "xor->dst");
+    cv::bitwise_and(m1, m2, dst);
+    Show(dst, "and->dst");
+    cv::bitwise_not(m1, dst);
+    Show(dst, "notm1->dst");
+}
+
+void MyCV::TextSplitMergeMixChannels(cv::Mat &image)
+{
+    std::vector<cv::Mat> mat_vertor;
+    cv::split(image, mat_vertor);
+    Show(mat_vertor[0], mat_vertor[1], mat_vertor[2], "blue channel", "green channel", "red channel");
+    // 如何理解上述操作，现在仅仅是分别取到了三通道的每一个通道的单通道值。
+    // 如果想要达到说去除蓝色通道的值就把该通道的值取零然后在合并通道此时其余通道值不变，而蓝色通道的值为0，因而达到了目的
+
+    // 此时我去除了blue 通道的颜色，图片是红绿混合成黄色
+    // mat_vertor[1] = 0;
+    cv::Mat dst = cv::Mat::zeros(image.size(), image.type());
+
+    int from_to[] = {0, 2, 1, 1, 2, 0};
+    // 第一个参数是Mat指针，可以传Mat数组进来，后面就是传进去几个，第三个参数就是混合到那里
+    // 最重要的就是fromTo参数，例如上面的就是，交换0和2通道 蓝红通道
+    cv::mixChannels(&image, 1, &dst, 1, from_to, 3);
+
+    // cv::merge(mat_vertor, dst);
+    Show(image,dst,"image","dst");
+}
+
+void MyCV::TextInRang(cv::Mat &image)
+{
+    // 转化成hsv
+    cv::Mat hsv;
+    cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV);
+    cv::Mat mask;
+    // 仅仅常用于背景与主体颜色有颜色差距，且背景为纯色的图像
+    // 第二个参数是背景颜色对应表格的最小值，第三个参数对应最大值，第四个参数就是提取到的主体，白色背景黑色为提取对象
+    cv::inRange(hsv, cv::Scalar(0,0,221), cv::Scalar(180,30,255), mask);
+    Show(image, mask, "image", "mask");
+    // 创建一个全红背景图像
+    cv::Mat redBack = cv::Mat::zeros(image.size(), image.type());
+    redBack = cv::Scalar(40, 40, 200);
+    // 把mask取反，此时为黑色背景，白色为主体
+    cv::bitwise_not(mask, mask);
+    // 因为copyTo函数的要求就是会提取有数值的部分到redBack中，经过取反mask中的主体为白色有数值，背景为黑色（0），此时就会把主体复制到红色背景当中。
+    image.copyTo(redBack, mask);
+    Show(redBack, mask, "redBack", "mask");
+}
 // @ private
 
 void MyCV::NamedAndResizeWindow(const char *winname)
@@ -322,10 +433,12 @@ void MyCV::NamedAndResizeWindow(const char *winname)
 
 void MyCV::PrintMenu()
 {
+    std::cout << "0:Come back initial image" << std::endl;
     std::cout << "1: BGR to Gray" << std::endl;
     std::cout << "2:BGR to HSV" << std::endl;
     std::cout << "3:Inverse Color" << std::endl;
     std::cout << "4:Trackbar change color and contrast" << std::endl;
+    std::cout << "5:Show different color style" << std::endl;
     std::cout << "+:brightness add 50" << std::endl;
     std::cout << "-:brightness subtract 50" << std::endl;
     std::cout << "*:brightness mutliply 5" << std::endl;
