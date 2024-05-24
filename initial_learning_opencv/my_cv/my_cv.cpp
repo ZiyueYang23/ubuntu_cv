@@ -372,9 +372,9 @@ void MyCV::TextBitwise()
     // Scalar很熟了就是给颜色，第四个参数是边框厚度如果想填充就-1,正数就是表示边框的宽度，第五个参数一般LINE_8,第六个是小数点，笔记中有详解
     cv::rectangle(m1, cv::Rect(100, 100, 80, 80), cv::Scalar(255, 0, 255), -1, cv::LINE_8, 0);
     cv::rectangle(m2, cv::Rect(150, 150, 80, 80), cv::Scalar(0, 255, 255), -1, cv::LINE_8, 0);
-    cv::Mat dst=cv::Mat::zeros(cv::Size(256,256),CV_8UC3);
-    cv::bitwise_or(m1,m2,dst);
-    Show(m1, m2,dst, "m1", "m2","or->dst");
+    cv::Mat dst = cv::Mat::zeros(cv::Size(256, 256), CV_8UC3);
+    cv::bitwise_or(m1, m2, dst);
+    Show(m1, m2, dst, "m1", "m2", "or->dst");
     cv::bitwise_xor(m1, m2, dst);
     Show(dst, "xor->dst");
     cv::bitwise_and(m1, m2, dst);
@@ -401,7 +401,7 @@ void MyCV::TextSplitMergeMixChannels(cv::Mat &image)
     cv::mixChannels(&image, 1, &dst, 1, from_to, 3);
 
     // cv::merge(mat_vertor, dst);
-    Show(image,dst,"image","dst");
+    Show(image, dst, "image", "dst");
 }
 
 void MyCV::TextInRang(cv::Mat &image)
@@ -412,7 +412,7 @@ void MyCV::TextInRang(cv::Mat &image)
     cv::Mat mask;
     // 仅仅常用于背景与主体颜色有颜色差距，且背景为纯色的图像
     // 第二个参数是背景颜色对应表格的最小值，第三个参数对应最大值，第四个参数就是提取到的主体，白色背景黑色为提取对象
-    cv::inRange(hsv, cv::Scalar(0,0,221), cv::Scalar(180,30,255), mask);
+    cv::inRange(hsv, cv::Scalar(0, 0, 221), cv::Scalar(180, 30, 255), mask);
     Show(image, mask, "image", "mask");
     // 创建一个全红背景图像
     cv::Mat redBack = cv::Mat::zeros(image.size(), image.type());
@@ -423,6 +423,118 @@ void MyCV::TextInRang(cv::Mat &image)
     image.copyTo(redBack, mask);
     Show(redBack, mask, "redBack", "mask");
 }
+
+void MyCV::GetMinMaxLocAndMeanStddev(cv::Mat &image)
+{
+    double minv;
+    double maxv;
+    cv::Point minLoc;
+    cv::Point maxLoc;
+    // 由于是三通道的因此需要一个容器来装三个通道的值，minMaxLoc函数默认的是灰度单通道的
+    std::vector<cv::Mat> mv;
+    // 分离函数
+    cv::split(image, mv);
+    // 获得单通道的最小值和最大值并且获得位置Point
+    for (int i(0); i < mv.size(); i++)
+    {
+        cv::minMaxLoc(mv[i], &minv, &maxv, &minLoc, &maxLoc);
+        std::cout << "Channel No." << i << std::endl
+                  << " minVal:" << minv << std::endl
+                  << "maxVal:" << maxv << std::endl
+                  << std::endl;
+    }
+    // 均值，标准差
+    cv::Scalar mean, stddev;
+    // 求出图像各通道均值和标准差
+    cv::meanStdDev(image, mean, stddev);
+    std::cout << "means:" << mean << std::endl
+              << "stddev:" << stddev << std::endl;
+    Show(image);
+}
+
+void MyCV::TextDarwRectangleAndCircle(cv::Mat &image)
+{
+    cv::Mat bg = cv::Mat::zeros(image.size(), image.type());
+    cv::Mat dst = bg.clone();
+    cv::circle(bg, cv::Point(400, 400), 50, cv::Scalar(255, 0, 0), -1, 8);
+    cv::rectangle(bg, cv::Rect(100, 100, 300, 300), cv::Scalar(0, 0, 255), -1, 8);
+    cv::line(bg, cv::Point(100, 100), cv::Point(800, 800), cv::Scalar(0, 255, 0), 4, 8);
+    // 椭圆
+    cv::ellipse(bg, cv::RotatedRect(cv::Point(400, 400), cv::Size(100, 300), 60), cv::Scalar(255, 255, 255), 1, 5);
+    // 混合，把圆矩形线等等画在bg上然后按照权重混合。
+    cv::addWeighted(image, 0.5, bg, 0.5, 0, dst);
+    Show(dst);
+}
+
+void MyCV::TextRandomDrawLine()
+{
+    cv::Mat bg = cv::Mat::zeros(cv::Size(1200, 800), CV_8UC3);
+    NamedAndResizeWindow("random line");
+    int w = bg.cols;
+    int h = bg.rows;
+    // 生成随机数 参数是种子
+    cv::RNG rng(12345);
+    while (true)
+    {
+        // 按下esc退出
+        int c = cv::waitKey(10);
+        if (c == 27)
+        {
+            break;
+        }
+        // 生成0,1200之间的随机数
+        int x1 = rng.uniform(0, w);
+        int x2 = rng.uniform(0, w);
+
+        int y1 = rng.uniform(0, h);
+        int y2 = rng.uniform(0, h);
+        // 清屏
+        // bg = cv::Scalar(0, 0, 0);
+        cv::line(bg, cv::Point(x1, y1), cv::Point(x2, y2), cv::Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255)), 1);
+        cv::imshow("random line", bg);
+    }
+    cv::destroyAllWindows();
+}
+
+void MyCV::TextFillPolyPolylinesDrawContours()
+{
+    cv::Mat bg = cv::Mat::zeros(cv::Size(1200, 800), CV_8UC3);
+    cv::Point p0(0, 0);
+    cv::Point p1(100, 100);
+    cv::Point p2(50, 400);
+    cv::Point p3(100, 500);
+    cv::Point p4(500, 600);
+    cv::Point p5(900, 300);
+    cv::Point p6(400, 100);
+    // 点集
+    std::vector<cv::Point> pts1;
+    pts1.push_back(p1);
+    pts1.push_back(p2);
+    pts1.push_back(p3);
+    pts1.push_back(p4);
+    pts1.push_back(p5);
+    pts1.push_back(p6);
+    std::vector<cv::Point> pts2(pts1);
+    pts2.push_back(p0);
+    // 多个点集
+    std::vector<std::vector<cv::Point>> contours;
+    contours.push_back(pts1);
+    contours.push_back(pts2);
+
+    // 方式一：
+    // 既可以描边也可以填充，而且不止可以画一个，因为你传进去的是多个点集，第三个参数就是选择点集下标，从0开始，如果想全都打印出来就-1
+    // 后面常见的-1填充，正数就是线条粗细
+    cv::drawContours(bg, contours, 1, cv::Scalar(0, 0, 255), 3);
+    Show(bg);
+
+    // 方式二：
+    // 如果用这种方式polylines就是描边，ture那个参数就是是否封闭，需要注意点就是该函数的thickness的参数只能大于0，毕竟只能描边
+    cv::polylines(bg, pts2, true, cv::Scalar(0, 255, 255), 4, cv::LINE_AA);
+    // 填充
+    cv::fillPoly(bg, pts2, cv::Scalar(255, 255, 0));
+    Show(bg, "draw");
+}
+
 // @ private
 
 void MyCV::NamedAndResizeWindow(const char *winname)
@@ -447,7 +559,7 @@ void MyCV::PrintMenu()
 
 // @ static
 
-void ChangeBrightness(int b, void *userdata)
+void MyCV::ChangeBrightness(int b, void *userdata)
 {
     // 承接image
     cv::Mat image = *((cv::Mat *)userdata);
@@ -465,7 +577,7 @@ void ChangeBrightness(int b, void *userdata)
 // 当你拖动滑动条时，首先改变的是brightness（亮度）或者contrast（对比度）的值,
 // 然后createTrackbar函数会调用相应的回调函数，这些回调函数会根据新的brightness或者contrast的值对图像进行修改，
 // 最后通过imshow函数显示修改后的图像。整个过程就是通过滑动条的变化触发回调函数，从而实现图像的动态调整。
-void ChangeContrast(int b, void *userdata)
+void MyCV::ChangeContrast(int b, void *userdata)
 {
     cv::Mat image = *((cv::Mat *)userdata);
     cv::Mat temp = cv::Mat::zeros(image.size(), image.type());
@@ -476,3 +588,63 @@ void ChangeContrast(int b, void *userdata)
     cv::addWeighted(image, contrast, temp, 0.0, 0, dst);
     cv::imshow("image_", dst);
 }
+// 真离谱 本来是自己想法写的，有点瑕疵，然后就对着敲，结果一直是这样我也不知到为啥哎不管了。
+cv::Point sp(-1, -1);
+cv::Point ep(-1, -1);
+cv::Mat temp;
+
+void MyCV::OnDraw(int event, int x, int y, int flags, void *userdata)
+{
+    cv::Mat &image = *((cv::Mat *)userdata);
+
+    if (event == cv::EVENT_LBUTTONDOWN)
+    {
+        sp.x = x;
+        sp.y = y;
+        std::cout << "start point: " << sp << std::endl;
+    }
+    else if (event == cv::EVENT_LBUTTONUP)
+    {
+        ep.x = x;
+        ep.y = y;
+        int dx = std::abs(ep.x - sp.x);
+        int dy = std::abs(ep.y - sp.y);
+        if (dx > 0 && dy > 0)
+        {
+            cv::Rect box(sp, ep);
+            cv::rectangle(image, box, cv::Scalar(0, 0, 255), 4, cv::LINE_AA);
+            cv::imshow("mouse drawing", image);
+        }
+        sp.x = -1;
+        sp.y = -1;
+    }
+    else if (event == cv::EVENT_MOUSEMOVE)
+    {
+        if (sp.x >= 0 && sp.y >= 0)
+        {
+            ep.x = x;
+            ep.y = y;
+            temp.copyTo(image);  // Restore the original image
+            int dx = std::abs(ep.x - sp.x);
+            int dy = std::abs(ep.y - sp.y);
+            if (dx > 0 && dy > 0)
+            {
+                cv::Rect box(sp, ep);
+                cv::rectangle(image, box, cv::Scalar(0, 0, 255), 4, cv::LINE_AA);
+                cv::imshow("mouse drawing", image);
+            }
+        }
+    }
+}
+
+void MyCV::MouseDrawing(cv::Mat &image)
+{
+    cv::namedWindow("mouse drawing", cv::WINDOW_NORMAL);
+    cv::resizeWindow("mouse drawing", 1200, 800);
+    cv::setMouseCallback("mouse drawing", OnDraw, (void *)&image);
+    temp = image.clone();  // Clone the image for temporary drawing
+    cv::imshow("mouse drawing", image);
+}
+
+// 需要特别注意的是，在多文件处理中，静态成员变量需要拿到.h文件之外去定义，否则会发生重复定义
+// MyCV *MyCV::instance = nullptr;

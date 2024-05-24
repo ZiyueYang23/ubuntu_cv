@@ -10,8 +10,12 @@ int main(void)
     // my_cv.DispalayAllFunction(image_0);
     // my_cv.TextBitwise();
     // my_cv.TextSplitMergeMixChannels(image_0);
-    my_cv.TextInRang(image_3);
-    // cv::waitKey(0);
-    // cv::destroyAllWindows();
+    // my_cv.TextInRang(image_3);
+    // my_cv.TextRandomDarwLine();
+    // my_cv.TextFillPolyPolylinesDrawContours();
+    // my_cv.TextDarwRectangleAndCircle(image_0);
+    my_cv.MouseDrawing(image_0);
+    cv::waitKey(0);
+    cv::destroyAllWindows();
     return 0;
 }
